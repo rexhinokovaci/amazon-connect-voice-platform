@@ -10,6 +10,7 @@ import { setRepository as setLexRepo } from '../../src/lambdas/lex-fulfillment/h
 import { resetTenantConfigCache } from '../../src/shared/tenant';
 import { CallSimulator, type EngineEvent } from './engine';
 import { METER_ANSWERS, OPENERS, READING_ANSWERS, SCENARIOS } from './scenarios';
+import { createTour } from './tour';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -569,3 +570,47 @@ const initial = renderFor(tenants[0]!);
 drawBlocks(initial.flow);
 updateCallerCard();
 $<HTMLTextAreaElement>('flowsrc').value = JSON.stringify(initial.flow, null, 2);
+
+const selectTab = (name: string) => () =>
+  document.querySelector<HTMLButtonElement>(`[role=tab][data-tab="${name}"]`)?.click();
+
+const tour = createTour('simulator', [
+  {
+    target: '.call-card',
+    title: 'This is a live phone line',
+    body: 'Calls run through the real <code>main-ivr.json</code> contact flow and the Lambda handlers that get deployed to AWS. You type (or speak, in Chrome) what the caller says.',
+  },
+  {
+    target: '.controls',
+    title: 'Choose who is calling',
+    body: 'Pick the caller, the brand and the time of day. Arben is a known customer, Lena is on the Priority Services Register, and the others are unknown or withheld. Try a Sunday call to see the out-of-hours path.',
+  },
+  {
+    target: '#call',
+    title: 'Place the call',
+    body: 'The green button dials. Once connected, answer the IVR with the suggestion chips or your own words. The red button hangs up.',
+  },
+  {
+    target: '#scenarios',
+    title: 'Or run a scripted scenario',
+    body: 'Seventeen one-click calls covering balance checks, meter readings, emergencies, vulnerable callers and a second tenant. Each one is also a unit test.',
+  },
+  {
+    target: '#blocks',
+    title: 'Watch the flow execute',
+    body: 'Every contact flow block lights up in the order it ran, with step numbers. The highlighted one is running now.',
+  },
+  {
+    target: '.tabs',
+    title: 'Look under the hood',
+    body: '<b>Invocations</b> shows the exact Lambda and Lex events and responses. <b>Logs</b> shows the structured JSON logs (note the PII masking). <b>Flow lint</b> lets you break the flow and run the CI checks.',
+    before: selectTab('invocations'),
+  },
+  {
+    target: '.seg-nav',
+    title: 'Then try the admin console',
+    body: 'Queues, agents, routing and opening hours for each brand, with config changes produced as a reviewed diff.',
+  },
+]);
+$('tour-btn').addEventListener('click', () => tour.open());
+tour.autoStart();

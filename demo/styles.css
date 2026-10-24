@@ -2074,3 +2074,29 @@ textarea.code:focus {
 .sc-expect::before {
   content: '→ ';
 }
+
+.tour-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: 500 14px/1 var(--font);
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--blue-soft);
+  color: var(--blue);
+  cursor: pointer;
+}
+.tour-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+.tour-btn:hover {
+  background: var(--blue-ring);
+}
+@media (max-width: 600px) {
+  .nav-links a.pill-btn {
+    display: none;
+  }
+}

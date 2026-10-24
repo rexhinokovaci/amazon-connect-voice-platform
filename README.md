@@ -10,9 +10,9 @@
 
 Contact flows, Lex V2 bot, Lambda fulfilment, infrastructure and operations for running inbound voice on Amazon Connect across several brands.
 
-**[Live IVR simulator](https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/)** · **[Admin console](https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/admin.html)** · **[Docs](https://rexhinokovaci.github.io/amazon-connect-voice-platform/)**
+**[Live IVR simulator](https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/)** · **[Admin console](https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/admin.html)** · **[Demo guide](https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo-guide/)** · **[Docs](https://rexhinokovaci.github.io/amazon-connect-voice-platform/)**
 
-The simulator runs this repo's real `main-ivr.json` flow and the deployed Lambda handlers in the browser. Seventeen scripted scenarios cover the main paths: balance, meter readings (valid, spoken, rejected), gas emergency, vulnerable callers, out of hours and a second tenant. Every one is a unit test, so the demo can't drift from the code.
+The simulator runs this repo's real `main-ivr.json` flow and the deployed Lambda handlers in the browser. Seventeen scripted scenarios cover the main paths: balance, meter readings (valid, spoken, rejected), gas emergency, vulnerable callers, out of hours and a second tenant. Every one is a unit test, so the demo can't drift from the code. Both pages open a guided tour on first visit, and the [demo guide](docs/demo-guide.md) has a five-minute walkthrough.
 
 ## What's in here
 

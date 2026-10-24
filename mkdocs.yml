@@ -47,6 +47,7 @@ nav:
   - Home: index.md
   - Live simulator: https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/
   - Admin console: https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/admin.html
+  - Demo guide: demo-guide.md
   - Design:
       - Architecture: architecture.md
       - Latency budget: latency-budget.md

@@ -2,6 +2,7 @@ import energy from '../../config/tenants/brightwell-energy.json';
 import drita from '../../config/tenants/drita-energji.json';
 import { INTENTS } from '../../src/domain/bot-definition';
 import { isOpen } from '../../src/domain/hours';
+import { createTour } from './tour';
 import {
   TenantConfigSchema,
   parseTenantConfig,
@@ -538,3 +539,48 @@ function renderAll() {
 
 renderAll();
 setInterval(tick, 2000);
+
+const tour = createTour('admin', [
+  {
+    target: '.head-controls',
+    title: 'One console, every brand',
+    body: 'Switch between tenants here. Each brand has its own Connect instance, queues, agents and opening hours.',
+  },
+  {
+    target: '#kpis',
+    title: 'Live floor at a glance',
+    body: 'Contacts waiting, longest wait, agents available, service level against target, and whether lines are open right now. The numbers update every two seconds (simulated traffic).',
+  },
+  {
+    target: '#queues',
+    title: 'Queue board',
+    body: 'Live load per queue. <b>Target</b> and <b>Max</b> are editable. Change one and watch the pending configuration change below.',
+  },
+  {
+    target: '#agents',
+    title: 'Agent roster',
+    body: "Change an agent's status (Available, Break, Offline...). Operational changes like this apply immediately and are written to the audit log.",
+  },
+  {
+    target: '#routing',
+    title: 'Intent routing and hours',
+    body: 'Decide which queue each bot intent lands in, and edit opening hours. The gas emergency route is locked: it never goes through a queue.',
+  },
+  {
+    target: '#diff',
+    title: 'Config changes go through review',
+    body: 'Queue, routing and hours edits become a diff against <code>config/tenants/*.json</code>, validated live by the same schema CI uses. Copy it into a PR. Nothing goes straight to prod.',
+  },
+  {
+    target: '.incident',
+    title: 'Incident mode',
+    body: "During a regional outage, flip this to play an incident banner to callers before routing. It's audited too.",
+  },
+  {
+    target: '#audit',
+    title: 'Audit log',
+    body: 'Who changed what and when, with the Connect API each action maps to.',
+  },
+]);
+$('tour-btn').addEventListener('click', () => tour.open());
+tour.autoStart();
