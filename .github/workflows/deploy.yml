@@ -1,0 +1,60 @@
+name: Deploy
+
+# Manual promotion. Tenants deploy one at a time (max-parallel: 1) so a bad
+# change stops at the first one. AWS access is via OIDC - no long-lived keys.
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: Target stage
+        type: choice
+        options: [dev, staging, prod]
+        required: true
+      tenants:
+        description: JSON array of tenant ids, lowest traffic first
+        default: '["drita-energji", "brightwell-energy"]'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-${{ inputs.stage }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: ${{ matrix.tenant }} -> ${{ inputs.stage }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: ${{ inputs.stage == 'prod' && 'production' || inputs.stage }}
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        tenant: ${{ fromJSON(inputs.tenants) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-west-2' }}
+      - name: Diff
+        run: npx cdk diff -c stage=${{ inputs.stage }} -c tenant=${{ matrix.tenant }} -c version=${{ github.sha }}
+      - name: Deploy
+        run: >
+          npx cdk deploy --require-approval never
+          -c stage=${{ inputs.stage }}
+          -c tenant=${{ matrix.tenant }}
+          -c version=${{ github.sha }}
+          -c datadogApiKeySecretArn=${{ vars.DATADOG_API_KEY_SECRET_ARN }}
+      - name: Smoke test
+        run: npx tsx scripts/smoke-test.ts --stage ${{ inputs.stage }} --tenant ${{ matrix.tenant }}

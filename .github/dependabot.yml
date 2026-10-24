@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 5
+    groups:
+      aws:
+        patterns: ['aws-cdk*', '@aws-sdk/*', 'constructs', '@smithy/*']
+      dev-tooling:
+        dependency-type: development
+  - package-ecosystem: pip
+    directory: /python
+    schedule: { interval: weekly, day: monday }
+  - package-ecosystem: pip
+    directory: /
+    schedule: { interval: monthly }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday }

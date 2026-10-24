@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typescript:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run flows:validate
+      - run: npx vitest run --coverage
+      - run: npm run datadog:plan
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  python:
+    name: Python
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: python/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy ctr_processor
+      - run: pytest -q
+
+  synth:
+    name: CDK synth (${{ matrix.stage }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: typescript
+    strategy:
+      matrix:
+        stage: [dev, prod]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx cdk synth --quiet -c stage=${{ matrix.stage }}
+        env:
+          CDK_DEFAULT_ACCOUNT: '111111111111'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cdk-out-${{ matrix.stage }}
+          path: cdk.out/*.template.json
+          retention-days: 7

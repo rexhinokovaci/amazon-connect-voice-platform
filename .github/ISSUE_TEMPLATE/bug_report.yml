@@ -1,0 +1,46 @@
+name: Bug report
+description: Something behaves differently from what the docs or code say it should.
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Production incident?** Don't file an issue - follow the [runbooks](https://rexhinokovaci.github.io/amazon-connect-voice-platform/runbooks/) and page on-call.
+        Never paste caller phone numbers, account numbers, recordings or transcripts here.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        [
+          Contact flow,
+          Lex bot,
+          Router Lambda,
+          Fulfilment Lambda,
+          CTR processor,
+          Infrastructure (CDK),
+          Observability,
+          Demo / docs,
+        ]
+    validations: { required: true }
+  - type: input
+    id: tenant
+    attributes: { label: Tenant and stage, placeholder: brightwell-energy / staging }
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include contact IDs or Datadog log links, not raw call data.
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes: { label: What you expected }
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: The simulator (docs site → Live demo) often reproduces flow issues without AWS access.
+  - type: input
+    id: version
+    attributes: { label: Commit / version deployed }

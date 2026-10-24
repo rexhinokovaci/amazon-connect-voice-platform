@@ -1,0 +1,29 @@
+name: Feature or change request
+description: A new journey, intent, routing rule or capability.
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who is affected and how. Volumes help (calls/day, % of contacts).
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes: { label: Proposed change }
+    validations: { required: true }
+  - type: textarea
+    id: measure
+    attributes:
+      label: How we'll know it worked
+      description: e.g. containment +3 pts for meter readings, abandonment unchanged.
+    validations: { required: true }
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Touches
+      options:
+        - label: Customer-facing prompts (needs content sign-off)
+        - label: Emergency / vulnerable customer paths
+        - label: Personal data handling
+        - label: More than one tenant

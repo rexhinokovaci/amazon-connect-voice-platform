@@ -1,0 +1,9 @@
+# Default
+*                       @rexhinokovaci
+
+# Anything a caller hears or any routing change gets a second pair of eyes.
+/contact-flows/         @rexhinokovaci
+/config/tenants/        @rexhinokovaci
+/src/domain/routing.ts  @rexhinokovaci
+/infra/                 @rexhinokovaci
+/.github/workflows/     @rexhinokovaci

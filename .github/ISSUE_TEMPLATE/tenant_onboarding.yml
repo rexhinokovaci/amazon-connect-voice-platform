@@ -1,0 +1,31 @@
+name: New tenant
+description: Onboard a new brand onto the voice estate.
+labels: [tenant, triage]
+body:
+  - type: input
+    id: brand
+    attributes: { label: Brand name }
+    validations: { required: true }
+  - type: input
+    id: region
+    attributes: { label: AWS region, placeholder: eu-west-2 }
+    validations: { required: true }
+  - type: textarea
+    id: numbers
+    attributes:
+      label: Numbers and porting
+      description: DIDs (E.164), current carrier, target port date.
+    validations: { required: true }
+  - type: textarea
+    id: hours
+    attributes: { label: Opening hours and holiday schedule }
+    validations: { required: true }
+  - type: textarea
+    id: queues
+    attributes: { label: Queues and intent mapping }
+  - type: textarea
+    id: compliance
+    attributes:
+      label: Data and compliance
+      description: Recording retention, data residency, PSR handling.
+    validations: { required: true }

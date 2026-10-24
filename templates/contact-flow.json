@@ -1,0 +1,28 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "set-logging",
+  "Metadata": { "name": "${DISPLAY_NAME} - CHANGE ME", "description": "Managed by CDK." },
+  "Actions": [
+    {
+      "Identifier": "set-logging",
+      "Type": "UpdateFlowLoggingBehavior",
+      "Parameters": { "FlowLoggingBehavior": "Enabled" },
+      "Transitions": { "NextAction": "message" }
+    },
+    {
+      "Identifier": "message",
+      "Type": "MessageParticipant",
+      "Parameters": { "Text": "Replace me." },
+      "Transitions": {
+        "NextAction": "disconnect",
+        "Errors": [{ "NextAction": "disconnect", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "disconnect",
+      "Type": "DisconnectParticipant",
+      "Parameters": {},
+      "Transitions": {}
+    }
+  ]
+}
