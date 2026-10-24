@@ -1,0 +1,80 @@
+{
+  "tenantId": "drita-energji",
+  "displayName": "Drita Energji",
+  "instanceAlias": "drita-energji-voice",
+  "region": "eu-central-1",
+  "locale": "en_GB",
+  "voice": {
+    "id": "Amy",
+    "engine": "neural"
+  },
+  "dialledNumbers": {
+    "+35542000100": {
+      "entryPoint": "residential"
+    },
+    "+35542000101": {
+      "entryPoint": "business"
+    }
+  },
+  "hours": {
+    "timezone": "Europe/Tirane",
+    "weekdays": {
+      "open": "08:00",
+      "close": "18:00"
+    },
+    "saturday": {
+      "open": "09:00",
+      "close": "14:00"
+    },
+    "sunday": null
+  },
+  "queues": [
+    {
+      "key": "faturat",
+      "name": "Faturat",
+      "description": "Billing and payments",
+      "serviceLevelSeconds": 60
+    },
+    {
+      "key": "defekte",
+      "name": "Defekte dhe ndërprerje",
+      "description": "Faults and outages",
+      "serviceLevelSeconds": 30
+    },
+    {
+      "key": "kontrata",
+      "name": "Kontrata të reja",
+      "description": "New connections and moves",
+      "serviceLevelSeconds": 120
+    },
+    {
+      "key": "informacion",
+      "name": "Informacion",
+      "description": "General enquiries",
+      "serviceLevelSeconds": 90
+    }
+  ],
+  "defaultQueue": "informacion",
+  "routing": {
+    "gasEmergencyNumber": "+35542000199",
+    "psrPriority": 2,
+    "intentQueues": {
+      "CheckBalance": "faturat",
+      "SubmitMeterReading": "faturat",
+      "MovingHome": "kontrata",
+      "SpeakToAgent": "informacion",
+      "ReportPowerCut": "defekte",
+      "PaymentDifficulty": "faturat",
+      "MakeComplaint": "informacion",
+      "SmartMeterQuery": "faturat"
+    }
+  },
+  "features": {
+    "novaSonic": false,
+    "callRecording": true
+  },
+  "retention": {
+    "ctrDays": 365,
+    "recordingDays": 90
+  }
+}

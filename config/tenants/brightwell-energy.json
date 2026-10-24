@@ -1,0 +1,76 @@
+{
+  "tenantId": "brightwell-energy",
+  "displayName": "Brightwell Energy",
+  "instanceAlias": "brightwell-energy-voice",
+  "region": "eu-west-2",
+  "locale": "en_GB",
+  "voice": {
+    "id": "Amy",
+    "engine": "neural"
+  },
+  "dialledNumbers": {
+    "+441134960000": {
+      "entryPoint": "residential"
+    },
+    "+441134960001": {
+      "entryPoint": "business"
+    }
+  },
+  "hours": {
+    "timezone": "Europe/London",
+    "weekdays": {
+      "open": "08:00",
+      "close": "20:00"
+    },
+    "saturday": {
+      "open": "09:00",
+      "close": "17:00"
+    },
+    "sunday": null
+  },
+  "queues": [
+    {
+      "key": "billing",
+      "name": "Billing",
+      "serviceLevelSeconds": 60
+    },
+    {
+      "key": "meter-readings",
+      "name": "Meter Readings",
+      "serviceLevelSeconds": 120
+    },
+    {
+      "key": "home-moves",
+      "name": "Home Moves",
+      "serviceLevelSeconds": 90
+    },
+    {
+      "key": "general",
+      "name": "General Enquiries",
+      "serviceLevelSeconds": 90
+    }
+  ],
+  "defaultQueue": "general",
+  "routing": {
+    "gasEmergencyNumber": "+44800111999",
+    "psrPriority": 2,
+    "intentQueues": {
+      "CheckBalance": "billing",
+      "SubmitMeterReading": "meter-readings",
+      "MovingHome": "home-moves",
+      "SpeakToAgent": "general",
+      "ReportPowerCut": "general",
+      "PaymentDifficulty": "billing",
+      "MakeComplaint": "general",
+      "SmartMeterQuery": "meter-readings"
+    }
+  },
+  "features": {
+    "novaSonic": false,
+    "callRecording": true
+  },
+  "retention": {
+    "ctrDays": 400,
+    "recordingDays": 180
+  }
+}
