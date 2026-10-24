@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IVR Simulator · Rex On Call</title>
+    <meta
+      name="description"
+      content="Place a simulated call through a real Amazon Connect contact flow and the Lambda handlers behind it, in your browser."
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="https://avatars.githubusercontent.com/u/55946528?v=4&s=96" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav-inner">
+        <a class="logo" href="../"
+          ><img
+            src="https://avatars.githubusercontent.com/u/55946528?v=4&s=96"
+            alt=""
+            width="30"
+            height="30"
+          /><span>Rex <b>On Call</b></span></a
+        >
+        <nav class="seg-nav" aria-label="Demo pages">
+          <a href="./" aria-current="page">Simulator</a>
+          <a href="admin.html">Admin</a>
+        </nav>
+        <nav class="nav-links">
+          <a href="../">Docs</a>
+          <a
+            class="pill-btn small"
+            href="https://github.com/rexhinokovaci/amazon-connect-voice-platform"
+            >View on GitHub</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap hero">
+        <p class="kicker"><span class="dot"></span>Live simulator</p>
+        <h1>Call a real Amazon Connect IVR <span class="mark-u">in your browser.</span></h1>
+        <p class="lede">
+          This runs the production <code>main-ivr.json</code> contact flow and the same router and
+          Lex fulfilment Lambdas that get deployed. Only the database and speech recognition are
+          simulated.
+        </p>
+      </section>
+
+      <section class="wrap">
+        <div class="glow">
+          <div class="call-card">
+            <div class="call-top">
+              <div class="status" id="status-wrap">
+                <span class="dot"></span><span id="status">Ready</span>
+              </div>
+              <span class="timer" id="timer">00:00</span>
+            </div>
+
+            <ol id="transcript" class="transcript" aria-live="polite">
+              <li class="empty">
+                <div class="bars" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                </div>
+                <p>Choose who's calling below, then press the call button.</p>
+              </li>
+            </ol>
+
+            <div id="outcome" class="outcome" hidden>
+              <span class="outcome-icon" aria-hidden="true"></span>
+              <div><strong id="outcome-title"></strong><span id="outcome-detail"></span></div>
+            </div>
+
+            <div id="chips" class="chips"></div>
+
+            <form id="say" class="composer" hidden>
+              <input
+                id="utterance"
+                autocomplete="off"
+                placeholder="Type what the caller says…"
+                aria-label="Your reply"
+              />
+              <button type="button" id="mic" class="mini-btn" aria-label="Speak" hidden>
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z"
+                  />
+                </svg>
+              </button>
+              <button id="send" class="mini-btn send" aria-label="Send">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 4l7 7-1.4 1.4L13 7.8V20h-2V7.8l-4.6 4.6L5 11z" />
+                </svg>
+              </button>
+            </form>
+
+            <div class="controls">
+              <label class="select avatar-select">
+                <span class="avatar" id="avatar">AR</span>
+                <select id="caller" aria-label="Caller"></select>
+              </label>
+              <label class="select">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4h2a2 2 0 0 1 2 2v10h-6v-4h-4v4zm4-14v2h2V7zm4 0v2h2V7zm-4 4v2h2v-2zm4 0v2h2v-2z"
+                  />
+                </svg>
+                <select id="tenant" aria-label="Brand"></select>
+              </label>
+              <label class="select">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.4 3.3 3.3-1.4 1.4-3.9-3.9V6h2z"
+                  />
+                </svg>
+                <select id="clock" aria-label="Time of call"></select>
+              </label>
+              <label class="speak" title="Read prompts aloud">
+                <input type="checkbox" id="speak" />
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 9v6h4l5 5V4L7 9zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z" />
+                </svg>
+                <span class="sr">Read prompts aloud</span>
+              </label>
+              <button id="call" class="round-btn" type="button" aria-label="Place call">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"
+                  />
+                </svg>
+              </button>
+              <button id="hangup" class="round-btn end" type="button" aria-label="End call" hidden>
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M12 9c-1.6 0-3.15.25-4.6.72v3.1a1 1 0 0 1-.56.9 11.5 11.5 0 0 0-2.66 1.85 1 1 0 0 1-1.41 0L.29 13.08a1 1 0 0 1 0-1.41A17 17 0 0 1 12 7a17 17 0 0 1 11.71 4.67 1 1 0 0 1 0 1.41l-2.48 2.49a1 1 0 0 1-1.41 0 11.3 11.3 0 0 0-2.67-1.85 1 1 0 0 1-.56-.9v-3.1A15 15 0 0 0 12 9z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap section">
+        <div class="section-head">
+          <h2>Scenarios</h2>
+          <p>
+            Each one places a scripted call. Watch the transcript, the flow and the invocations as
+            it runs. All of them are covered by unit tests.
+          </p>
+        </div>
+        <div class="scenarios" id="scenarios"></div>
+      </section>
+
+      <section class="wrap section">
+        <div class="section-head">
+          <h2>How the call was routed</h2>
+          <p>Every block in the contact flow, lit up in the order it ran.</p>
+        </div>
+        <div class="tray">
+          <ol id="blocks" class="rows flow-rows"></ol>
+        </div>
+      </section>
+
+      <section class="wrap section">
+        <div class="section-head">
+          <h2>Under the hood</h2>
+          <p>The exact events and responses, structured logs, and the flow linter used in CI.</p>
+        </div>
+        <div class="tabs" role="tablist">
+          <button role="tab" data-tab="invocations" aria-selected="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 3 3 12l5 9h2l-5-9 5-9zm8 0h-2l5 9-5 9h2l5-9z" /></svg
+            >Invocations <i id="inv-count">0</i>
+          </button>
+          <button role="tab" data-tab="logs" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 5h16v2H4zm0 6h16v2H4zm0 6h10v2H4z" /></svg
+            >Logs <i id="log-count">0</i>
+          </button>
+          <button role="tab" data-tab="lint" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m9 16.2-3.5-3.5L4 14.1l5 5 11-11-1.4-1.4z" /></svg
+            >Flow lint
+          </button>
+        </div>
+        <div class="tray">
+          <div id="tab-invocations" class="tab">
+            <p class="tray-empty">Lambda and Lex code hook calls will appear here during a call.</p>
+          </div>
+          <div id="tab-logs" class="tab" hidden>
+            <p class="tray-empty">
+              JSON logs as Datadog ingests them. Phone numbers and transcripts are masked by the
+              logger.
+            </p>
+            <pre id="logs" class="code"></pre>
+          </div>
+          <div id="tab-lint" class="tab" hidden>
+            <p class="tray-empty">
+              Break the flow (remove an error branch, point a transition nowhere) and run the same
+              lint rules CI uses.
+            </p>
+            <textarea
+              id="flowsrc"
+              class="code"
+              spellcheck="false"
+              aria-label="Flow JSON"
+            ></textarea>
+            <div class="lint-row">
+              <button id="lint" class="pill-btn" type="button">Run lint</button>
+              <pre id="lintout"></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="wrap foot">
+      <span>MIT licensed · Fictional brands, Ofcom drama-range numbers</span>
+      <a href="https://github.com/rexhinokovaci/amazon-connect-voice-platform/tree/main/demo"
+        >Source for this page</a
+      >
+    </footer>
+    <script src="app.js"></script>
+  </body>
+</html>

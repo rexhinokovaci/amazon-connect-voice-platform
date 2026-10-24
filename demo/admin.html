@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Console · Rex On Call</title>
+    <meta
+      name="description"
+      content="Queue board, agent roster, routing and opening hours for each tenant of the Connect voice estate."
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="https://avatars.githubusercontent.com/u/55946528?v=4&s=96" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="admin">
+    <header class="nav">
+      <div class="wrap wide nav-inner">
+        <a class="logo" href="../"
+          ><img
+            src="https://avatars.githubusercontent.com/u/55946528?v=4&s=96"
+            alt=""
+            width="30"
+            height="30"
+          /><span>Rex <b>On Call</b></span></a
+        >
+        <nav class="seg-nav" aria-label="Demo pages">
+          <a href="./">Simulator</a>
+          <a href="admin.html" aria-current="page">Admin</a>
+        </nav>
+        <nav class="nav-links">
+          <a href="../">Docs</a>
+          <a
+            class="pill-btn small"
+            href="https://github.com/rexhinokovaci/amazon-connect-voice-platform"
+            >View on GitHub</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap wide">
+      <section class="admin-head">
+        <div>
+          <h1 class="admin-title">Estate console</h1>
+          <p class="admin-sub">
+            Live operations and configuration for each brand. Metrics are simulated; config is
+            validated with the real tenant schema.
+          </p>
+        </div>
+        <div class="head-controls">
+          <label class="select">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4h2a2 2 0 0 1 2 2v10h-6v-4h-4v4zm4-14v2h2V7zm4 0v2h2V7zm-4 4v2h2v-2zm4 0v2h2v-2z"
+              />
+            </svg>
+            <select id="tenant" aria-label="Brand"></select>
+          </label>
+          <span class="env-badge"><span class="dot"></span>prod · simulated</span>
+          <label class="incident" title="Plays the incident banner to callers">
+            <input type="checkbox" id="incident" />
+            <span class="sw"><span></span></span>
+            Incident mode
+          </label>
+        </div>
+      </section>
+
+      <div id="incident-banner" class="banner" hidden>
+        <strong>Incident mode is on.</strong> Callers hear the incident banner before routing. Turn
+        it off once the incident is resolved.
+      </div>
+
+      <section class="kpis" id="kpis"></section>
+
+      <div class="admin-grid">
+        <section class="card-block span-2">
+          <div class="block-head">
+            <div>
+              <h2 class="h3">Queues</h2>
+              <p>Live load against each queue's target answer time.</p>
+            </div>
+            <span class="tag live-tag"><span class="dot"></span>Live</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table" id="queues">
+              <thead>
+                <tr>
+                  <th>Queue</th>
+                  <th class="num">Waiting</th>
+                  <th class="num">Oldest</th>
+                  <th class="num">Agents</th>
+                  <th>Service level</th>
+                  <th class="num">Target</th>
+                  <th class="num">Max</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card-block">
+          <div class="block-head">
+            <div>
+              <h2 class="h3">Agents</h2>
+              <p>Status changes apply immediately and are audited.</p>
+            </div>
+            <span class="tag" id="agent-summary"></span>
+          </div>
+          <div class="agent-filter" role="group" aria-label="Filter agents">
+            <button data-filter="all" aria-pressed="true">All</button>
+            <button data-filter="Available" aria-pressed="false">Available</button>
+            <button data-filter="On contact" aria-pressed="false">On contact</button>
+            <button data-filter="Away" aria-pressed="false">Away</button>
+          </div>
+          <ul class="agents" id="agents"></ul>
+        </section>
+
+        <section class="card-block">
+          <div class="block-head">
+            <div>
+              <h2 class="h3">Routing</h2>
+              <p>Where each bot intent lands. Changes become a config diff.</p>
+            </div>
+          </div>
+          <div id="routing" class="form-rows"></div>
+          <div class="block-sub">
+            <h3 class="h4">Opening hours <span class="muted" id="tz"></span></h3>
+            <div id="hours" class="form-rows"></div>
+          </div>
+        </section>
+
+        <section class="card-block span-2">
+          <div class="block-head">
+            <div>
+              <h2 class="h3">Pending configuration change</h2>
+              <p>
+                Queue limits, targets, routing and hours live in
+                <code>config/tenants/*.json</code> and ship through a reviewed PR, never straight to
+                prod.
+              </p>
+            </div>
+            <span class="tag" id="valid-tag">No changes</span>
+          </div>
+          <pre
+            class="diff"
+            id="diff"
+          ><span class="diff-empty">Edit a queue target, max contacts, a route or opening hours to see the diff here.</span></pre>
+          <div class="diff-actions">
+            <button class="pill-btn" id="copy" type="button" disabled>Copy config JSON</button>
+            <button class="ghost-btn" id="reset" type="button" disabled>Discard changes</button>
+            <span class="muted" id="copy-note"></span>
+          </div>
+        </section>
+
+        <section class="card-block span-2">
+          <div class="block-head">
+            <div>
+              <h2 class="h3">Audit log</h2>
+              <p>Every operational change, who made it and when.</p>
+            </div>
+          </div>
+          <ol class="audit" id="audit">
+            <li class="audit-empty">No changes yet this session.</li>
+          </ol>
+        </section>
+      </div>
+    </main>
+
+    <footer class="wrap wide foot">
+      <span>MIT licensed · Fictional brands and people</span>
+      <a href="https://github.com/rexhinokovaci/amazon-connect-voice-platform/tree/main/demo"
+        >Source for this page</a
+      >
+    </footer>
+    <script src="admin.js"></script>
+  </body>
+</html>
