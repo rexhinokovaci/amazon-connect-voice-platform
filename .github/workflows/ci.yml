@@ -30,7 +30,7 @@ jobs:
       - run: npm run flows:validate
       - run: npx vitest run --coverage
       - run: npm run datadog:plan
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage
@@ -75,7 +75,7 @@ jobs:
       - run: npx cdk synth --quiet -c stage=${{ matrix.stage }}
         env:
           CDK_DEFAULT_ACCOUNT: '111111111111'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: cdk-out-${{ matrix.stage }}
           path: cdk.out/*.template.json
