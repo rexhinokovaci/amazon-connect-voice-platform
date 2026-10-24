@@ -1,0 +1,24 @@
+[
+  {
+    "name": "connect-voice: self-service turns answered within budget",
+    "description": "Share of Lex fulfilment invocations completing inside the 300ms code hook budget.",
+    "type": "metric",
+    "query": {
+      "numerator": "sum:connect_voice.lex.fulfilment_ms.count{env:prod,!timeout:true}.as_count() - sum:connect_voice.lex.fulfilment_error{env:prod}.as_count()",
+      "denominator": "sum:connect_voice.lex.fulfilment_ms.count{env:prod}.as_count()"
+    },
+    "thresholds": [{ "timeframe": "30d", "target": 99.5, "warning": 99.7 }],
+    "tags": ["service:connect-voice", "team:connect-channels"]
+  },
+  {
+    "name": "connect-voice: calls reach a destination",
+    "description": "Contacts that end in self-service, an agent, or an external transfer, rather than a technical error message.",
+    "type": "metric",
+    "query": {
+      "numerator": "sum:connect_voice.contact.count{env:prod,channel:voice}.as_count() - sum:connect_voice.router.error{env:prod}.as_count()",
+      "denominator": "sum:connect_voice.contact.count{env:prod,channel:voice}.as_count()"
+    },
+    "thresholds": [{ "timeframe": "30d", "target": 99.9 }],
+    "tags": ["service:connect-voice", "team:connect-channels"]
+  }
+]

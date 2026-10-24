@@ -1,0 +1,70 @@
+[
+  {
+    "name": "[connect-voice] {{tenant.name}} - Lex fulfilment p95 over 300ms",
+    "type": "query alert",
+    "query": "percentile(last_10m):p95:connect_voice.lex.fulfilment_ms{env:prod} by {tenant} > 300",
+    "message": "Lex fulfilment p95 for {{tenant.name}} is {{value}}ms (budget 300ms). Callers hear longer pauses.\n\nRunbook: https://rexhinokovaci.github.io/amazon-connect-voice-platform/runbooks/lex-fulfilment-errors/\n\n@slack-connect-voice-alerts",
+    "options": {
+      "thresholds": { "critical": 300, "warning": 220 },
+      "notify_no_data": false,
+      "renotify_interval": 60,
+      "require_full_window": false
+    },
+    "tags": ["service:connect-voice", "team:connect-channels", "severity:p3"],
+    "priority": 3
+  },
+  {
+    "name": "[connect-voice] {{tenant.name}} - Lex fulfilment errors",
+    "type": "query alert",
+    "query": "sum(last_5m):sum:connect_voice.lex.fulfilment_error{env:prod} by {tenant}.as_count() > 10",
+    "message": "{{value}} fulfilment failures in 5 minutes for {{tenant.name}}. Callers are being handed to agents, so expect queue growth.\n\nRunbook: https://rexhinokovaci.github.io/amazon-connect-voice-platform/runbooks/lex-fulfilment-errors/\n\n@pagerduty-connect-voice",
+    "options": { "thresholds": { "critical": 10, "warning": 3 }, "notify_no_data": false },
+    "tags": ["service:connect-voice", "team:connect-channels", "severity:p2"],
+    "priority": 2
+  },
+  {
+    "name": "[connect-voice] {{tenant.name}} - Router falling back to default queue",
+    "type": "query alert",
+    "query": "sum(last_5m):sum:connect_voice.router.error{env:prod} by {tenant}.as_count() > 5",
+    "message": "Router is erroring and sending calls to the default queue. Intent routing and PSR priority are lost.\n\nRunbook: https://rexhinokovaci.github.io/amazon-connect-voice-platform/runbooks/router-degraded/\n\n@pagerduty-connect-voice",
+    "options": { "thresholds": { "critical": 5 }, "notify_no_data": false },
+    "tags": ["service:connect-voice", "team:connect-channels", "severity:p2"],
+    "priority": 2
+  },
+  {
+    "name": "[connect-voice] {{tenant.name}} - IVR containment dropped",
+    "type": "query alert",
+    "query": "sum(last_1h):sum:connect_voice.contact.contained{env:prod} by {tenant}.as_count() / sum:connect_voice.contact.count{env:prod,channel:voice} by {tenant}.as_count() * 100 < 15",
+    "message": "Self-service containment for {{tenant.name}} is {{value}}% over the last hour. Usually means a bot or backend issue sending everyone to agents.\n\n@slack-connect-voice-alerts",
+    "options": { "thresholds": { "critical": 15, "warning": 22 }, "notify_no_data": false, "require_full_window": true },
+    "tags": ["service:connect-voice", "team:connect-channels", "severity:p3"],
+    "priority": 3
+  },
+  {
+    "name": "[connect-voice] {{tenant.name}} - Queue abandonment high",
+    "type": "query alert",
+    "query": "sum(last_30m):sum:connect_voice.contact.abandoned{env:prod} by {tenant}.as_count() / sum:connect_voice.contact.count{env:prod,channel:voice} by {tenant}.as_count() * 100 > 12",
+    "message": "Abandonment is {{value}}% for {{tenant.name}}. Check staffing against volume before assuming a technical fault.\n\nRunbook: https://rexhinokovaci.github.io/amazon-connect-voice-platform/runbooks/queue-backlog/\n\n@slack-connect-voice-alerts @slack-wfm",
+    "options": { "thresholds": { "critical": 12, "warning": 8 }, "notify_no_data": false },
+    "tags": ["service:connect-voice", "team:connect-channels", "severity:p3"],
+    "priority": 3
+  },
+  {
+    "name": "[connect-voice] {{tenant.name}} - CTR pipeline stalled",
+    "type": "query alert",
+    "query": "max(last_15m):max:aws.kinesis.get_records_iterator_age_milliseconds.maximum{service:connect-voice,env:prod} by {tenant} > 600000",
+    "message": "CTR consumer is more than 10 minutes behind for {{tenant.name}}. Dashboards and containment alerts are stale; calls are unaffected.\n\nRunbook: https://rexhinokovaci.github.io/amazon-connect-voice-platform/runbooks/ctr-pipeline-lag/\n\n@slack-connect-voice-alerts",
+    "options": { "thresholds": { "critical": 600000, "warning": 180000 }, "notify_no_data": true, "no_data_timeframe": 30 },
+    "tags": ["service:connect-voice", "team:connect-channels", "severity:p4"],
+    "priority": 4
+  },
+  {
+    "name": "[connect-voice] {{tenant.name}} - Emergency transfer failed",
+    "type": "log alert",
+    "query": "logs(\"service:connect-voice env:prod @contactFlowModuleType:TransferParticipantToThirdParty @Results:(*Error* OR CallFailed)\").index(\"*\").rollup(\"count\").by(\"@tenant\").last(\"5m\") > 0",
+    "message": "A transfer to the gas emergency number failed. The caller was told to dial it directly. Treat as P1 until proven otherwise.\n\nRunbook: https://rexhinokovaci.github.io/amazon-connect-voice-platform/runbooks/emergency-transfer-failure/\n\n@pagerduty-connect-voice",
+    "options": { "thresholds": { "critical": 0 }, "enable_logs_sample": true },
+    "tags": ["service:connect-voice", "team:connect-channels", "severity:p1"],
+    "priority": 1
+  }
+]

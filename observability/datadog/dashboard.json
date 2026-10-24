@@ -1,0 +1,150 @@
+{
+  "title": "Connect voice - estate overview",
+  "description": "Per-tenant health of the Amazon Connect voice estate. Managed in git: observability/datadog/dashboard.json",
+  "layout_type": "ordered",
+  "template_variables": [
+    { "name": "tenant", "prefix": "tenant", "available_values": [], "default": "*" },
+    { "name": "env", "prefix": "env", "available_values": ["prod", "staging", "dev"], "default": "prod" }
+  ],
+  "widgets": [
+    {
+      "definition": {
+        "type": "group",
+        "title": "Caller experience",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "type": "query_value",
+              "title": "Contacts (1h)",
+              "requests": [{ "q": "sum:connect_voice.contact.count{$tenant,$env}.as_count()", "aggregator": "sum" }],
+              "precision": 0
+            }
+          },
+          {
+            "definition": {
+              "type": "query_value",
+              "title": "Containment %",
+              "requests": [
+                {
+                  "q": "sum:connect_voice.contact.contained{$tenant,$env}.as_count() / sum:connect_voice.contact.count{$tenant,$env,channel:voice}.as_count() * 100",
+                  "aggregator": "sum"
+                }
+              ],
+              "precision": 1
+            }
+          },
+          {
+            "definition": {
+              "type": "query_value",
+              "title": "Abandonment %",
+              "requests": [
+                {
+                  "q": "sum:connect_voice.contact.abandoned{$tenant,$env}.as_count() / sum:connect_voice.contact.count{$tenant,$env,channel:voice}.as_count() * 100",
+                  "aggregator": "sum",
+                  "conditional_formats": [
+                    { "comparator": ">", "value": 12, "palette": "white_on_red" },
+                    { "comparator": ">", "value": 8, "palette": "white_on_yellow" }
+                  ]
+                }
+              ],
+              "precision": 1
+            }
+          },
+          {
+            "definition": {
+              "type": "timeseries",
+              "title": "Queue wait p50 / p90 (s) by queue",
+              "requests": [
+                { "q": "p50:connect_voice.contact.queue_wait_seconds{$tenant,$env} by {queue}", "display_type": "line" },
+                { "q": "p90:connect_voice.contact.queue_wait_seconds{$tenant,$env} by {queue}", "display_type": "line" }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "type": "toplist",
+              "title": "Top intents (1h)",
+              "requests": [{ "q": "top(sum:connect_voice.contact.count{$tenant,$env} by {intent}.as_count(), 10, 'sum', 'desc')" }]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "type": "group",
+        "title": "Latency budget",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "type": "timeseries",
+              "title": "Lex fulfilment p95 vs 300ms budget",
+              "requests": [{ "q": "p95:connect_voice.lex.fulfilment_ms{$tenant,$env} by {intent}", "display_type": "line" }],
+              "markers": [{ "value": "y = 300", "display_type": "error dashed", "label": "budget" }]
+            }
+          },
+          {
+            "definition": {
+              "type": "timeseries",
+              "title": "Router duration p95",
+              "requests": [{ "q": "p95:connect_voice.router.duration_ms{$tenant,$env} by {operation}", "display_type": "line" }],
+              "markers": [{ "value": "y = 2500", "display_type": "error dashed", "label": "flow limit - headroom" }]
+            }
+          },
+          {
+            "definition": {
+              "type": "timeseries",
+              "title": "Time in IVR p50 / p90 (s)",
+              "requests": [
+                { "q": "p50:connect_voice.contact.ivr_seconds{$tenant,$env}", "display_type": "line" },
+                { "q": "p90:connect_voice.contact.ivr_seconds{$tenant,$env}", "display_type": "line" }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "type": "group",
+        "title": "Failures",
+        "layout_type": "ordered",
+        "widgets": [
+          {
+            "definition": {
+              "type": "timeseries",
+              "title": "Fulfilment errors by intent",
+              "requests": [{ "q": "sum:connect_voice.lex.fulfilment_error{$tenant,$env} by {intent,timeout}.as_count()", "display_type": "bars" }]
+            }
+          },
+          {
+            "definition": {
+              "type": "timeseries",
+              "title": "Router: errors and degraded lookups",
+              "requests": [
+                { "q": "sum:connect_voice.router.error{$tenant,$env}.as_count()", "display_type": "bars" },
+                { "q": "sum:connect_voice.router.lookup_degraded{$tenant,$env}.as_count()", "display_type": "bars" }
+              ]
+            }
+          },
+          {
+            "definition": {
+              "type": "timeseries",
+              "title": "Meter readings rejected by reason",
+              "requests": [{ "q": "sum:connect_voice.lex.reading_rejected{$tenant,$env} by {reason}.as_count()", "display_type": "bars" }]
+            }
+          },
+          {
+            "definition": {
+              "type": "timeseries",
+              "title": "External (emergency) transfers",
+              "requests": [{ "q": "sum:connect_voice.contact.transferred_external{$tenant,$env}.as_count()", "display_type": "bars" }]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
