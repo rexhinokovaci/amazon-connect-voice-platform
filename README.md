@@ -57,8 +57,8 @@ Deploying needs an AWS account with Connect enabled. See [onboarding](docs/onboa
 
 | Repo | What |
 |---|---|
-| [nova-sonic-voice-agent](https://github.com/rexhinokovaci/nova-sonic-voice-agent) | Speech-to-speech agent on Amazon Nova Sonic: tool use, barge-in, session renewal, per-turn latency |
-| [contact-centre-migration-toolkit](https://github.com/rexhinokovaci/contact-centre-migration-toolkit) | Converts a legacy IVR call tree to Connect flows and reconciles traffic during cutover |
+| [nova-sonic-voice-agent](https://github.com/rexhinokovaci/nova-sonic-voice-agent) ([playground](https://rexhinokovaci.github.io/nova-sonic-voice-agent/)) | Speech-to-speech agent on Amazon Nova Sonic: tool use, barge-in, session renewal, per-turn latency |
+| [contact-centre-migration-toolkit](https://github.com/rexhinokovaci/contact-centre-migration-toolkit) ([playground](https://rexhinokovaci.github.io/contact-centre-migration-toolkit/)) | Converts a legacy IVR call tree to Connect flows, plans number cutover waves, reconciles traffic |
 
 ## Licence
 
