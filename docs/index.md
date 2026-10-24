@@ -2,7 +2,7 @@
 
 Infrastructure, contact flows and Lambda code for running inbound voice on Amazon Connect across more than one brand, with the operational pieces (dashboards, monitors, runbooks) that keep it running.
 
-**[Open the live IVR simulator →](demo/)** · **[Admin console →](demo/admin.html)** · **[Demo guide →](demo-guide.md)**
+**[Open the live IVR simulator →](https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/)** · **[Admin console →](https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/admin.html)** · **[Demo guide →](demo-guide.md)**
 
 The simulator runs this repo's real contact flow JSON and the same Lambda handlers that get deployed. DynamoDB is swapped for an in-memory store and Lex NLU for a keyword matcher, so you can try a balance check, a meter reading, a gas emergency or an out-of-hours call without an AWS account.
 
