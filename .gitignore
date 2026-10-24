@@ -1,0 +1,15 @@
+node_modules/
+cdk.out/
+coverage/
+site/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.wav
+!test/fixtures/*.wav

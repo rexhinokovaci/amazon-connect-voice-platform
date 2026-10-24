@@ -1,0 +1,11 @@
+{
+  "app": "npx tsx infra/bin/app.ts",
+  "watch": {
+    "include": ["infra/**", "src/**", "contact-flows/**", "config/**"]
+  },
+  "context": {
+    "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/aws-iam:minimizePolicies": true
+  }
+}
