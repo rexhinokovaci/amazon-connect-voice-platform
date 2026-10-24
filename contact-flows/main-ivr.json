@@ -1,0 +1,258 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "set-logging",
+  "Metadata": {
+    "name": "${DISPLAY_NAME} - Main IVR",
+    "description": "Inbound entry flow. Managed by CDK - edits in the console will be overwritten on next deploy."
+  },
+  "Actions": [
+    {
+      "Identifier": "set-logging",
+      "Type": "UpdateFlowLoggingBehavior",
+      "Parameters": { "FlowLoggingBehavior": "Enabled" },
+      "Transitions": { "NextAction": "set-voice" }
+    },
+    {
+      "Identifier": "set-voice",
+      "Type": "UpdateContactTextToSpeechVoice",
+      "Parameters": {
+        "TextToSpeechVoice": "${VOICE_ID}",
+        "TextToSpeechEngine": "${VOICE_ENGINE}",
+        "TextToSpeechStyle": "None"
+      },
+      "Transitions": {
+        "NextAction": "set-recording",
+        "Errors": [{ "NextAction": "set-recording", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "set-recording",
+      "Type": "UpdateContactRecordingBehavior",
+      "Parameters": {
+        "RecordingBehavior": { "RecordedParticipants": ["Agent", "Customer"] }
+      },
+      "Transitions": { "NextAction": "check-hours" }
+    },
+    {
+      "Identifier": "check-hours",
+      "Type": "CheckHoursOfOperation",
+      "Parameters": { "HoursOfOperationId": "${HOURS_ARN}" },
+      "Transitions": {
+        "NextAction": "identify-caller",
+        "Conditions": [
+          { "NextAction": "identify-caller", "Condition": { "Operator": "Equals", "Operands": ["True"] } },
+          { "NextAction": "closed-menu", "Condition": { "Operator": "Equals", "Operands": ["False"] } }
+        ],
+        "Errors": [{ "NextAction": "identify-caller", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "closed-menu",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Thanks for calling ${DISPLAY_NAME}. Our team is available eight a.m. to eight p.m. Monday to Friday. If you can smell gas, stay on the line and say gas leak, or call the national gas emergency line."
+      },
+      "Transitions": {
+        "NextAction": "identify-caller",
+        "Errors": [{ "NextAction": "identify-caller", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "identify-caller",
+      "Type": "InvokeLambdaFunction",
+      "Parameters": {
+        "LambdaFunctionARN": "${ROUTER_LAMBDA_ARN}",
+        "InvocationTimeLimitSeconds": "3",
+        "LambdaInvocationAttributes": { "operation": "identify" },
+        "ResponseValidation": { "ResponseType": "STRING_MAP" }
+      },
+      "Transitions": {
+        "NextAction": "save-identity",
+        "Errors": [{ "NextAction": "bot", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "save-identity",
+      "Type": "UpdateContactAttributes",
+      "Parameters": {
+        "TargetContact": "Current",
+        "Attributes": {
+          "accountId": "$.External.accountId",
+          "firstName": "$.External.firstName",
+          "psr": "$.External.psr"
+        }
+      },
+      "Transitions": {
+        "NextAction": "bot",
+        "Errors": [{ "NextAction": "bot", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "bot",
+      "Type": "ConnectParticipantWithLexBot",
+      "Parameters": {
+        "Text": "Thanks for calling ${DISPLAY_NAME}. In a few words, how can I help today?",
+        "LexV2Bot": { "AliasArn": "${LEX_ALIAS_ARN}" },
+        "LexSessionAttributes": {
+          "accountId": "$.Attributes.accountId",
+          "firstName": "$.Attributes.firstName"
+        }
+      },
+      "Transitions": {
+        "NextAction": "route",
+        "Conditions": [
+          { "NextAction": "emergency-message", "Condition": { "Operator": "Equals", "Operands": ["ReportGasEmergency"] } },
+          { "NextAction": "check-handoff", "Condition": { "Operator": "Equals", "Operands": ["CheckBalance"] } },
+          { "NextAction": "check-handoff", "Condition": { "Operator": "Equals", "Operands": ["SubmitMeterReading"] } },
+          { "NextAction": "route", "Condition": { "Operator": "Equals", "Operands": ["SpeakToAgent"] } }
+        ],
+        "Errors": [
+          { "NextAction": "route", "ErrorType": "NoMatchingCondition" },
+          { "NextAction": "route", "ErrorType": "InputTimeLimitExceeded" },
+          { "NextAction": "route", "ErrorType": "NoMatchingError" }
+        ]
+      }
+    },
+    {
+      "Identifier": "emergency-message",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "If you can smell gas, don't use electrical switches or naked flames, and open your windows. I'm connecting you to the national gas emergency service now."
+      },
+      "Transitions": {
+        "NextAction": "emergency-transfer",
+        "Errors": [{ "NextAction": "emergency-transfer", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "emergency-transfer",
+      "Type": "TransferParticipantToThirdParty",
+      "Parameters": {
+        "ThirdPartyPhoneNumber": "${GAS_EMERGENCY_NUMBER}",
+        "ThirdPartyConnectionTimeLimitSeconds": "30",
+        "ContinueFlowExecution": "False"
+      },
+      "Transitions": {
+        "NextAction": "disconnect",
+        "Errors": [
+          { "NextAction": "emergency-fallback", "ErrorType": "CallFailed" },
+          { "NextAction": "emergency-fallback", "ErrorType": "ConnectionTimeLimitExceeded" },
+          { "NextAction": "emergency-fallback", "ErrorType": "NoMatchingError" }
+        ]
+      }
+    },
+    {
+      "Identifier": "emergency-fallback",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "I couldn't connect you. Please hang up and call the national gas emergency number, oh eight hundred, one one one, nine nine nine."
+      },
+      "Transitions": {
+        "NextAction": "disconnect",
+        "Errors": [{ "NextAction": "disconnect", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "check-handoff",
+      "Type": "Compare",
+      "Parameters": { "ComparisonValue": "$.Lex.SessionAttributes.handoff" },
+      "Transitions": {
+        "NextAction": "goodbye",
+        "Conditions": [
+          { "NextAction": "route", "Condition": { "Operator": "Equals", "Operands": ["true"] } }
+        ],
+        "Errors": [{ "NextAction": "goodbye", "ErrorType": "NoMatchingCondition" }]
+      }
+    },
+    {
+      "Identifier": "goodbye",
+      "Type": "MessageParticipant",
+      "Parameters": { "Text": "Is there anything else? If not, you can hang up. Thanks for calling." },
+      "Transitions": {
+        "NextAction": "disconnect",
+        "Errors": [{ "NextAction": "disconnect", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "route",
+      "Type": "InvokeLambdaFunction",
+      "Parameters": {
+        "LambdaFunctionARN": "${ROUTER_LAMBDA_ARN}",
+        "InvocationTimeLimitSeconds": "3",
+        "LambdaInvocationAttributes": { "operation": "route", "intent": "$.Lex.IntentName" },
+        "ResponseValidation": { "ResponseType": "STRING_MAP" }
+      },
+      "Transitions": {
+        "NextAction": "set-queue",
+        "Errors": [{ "NextAction": "set-default-queue", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "set-queue",
+      "Type": "UpdateContactTargetQueue",
+      "Parameters": { "QueueId": "$.External.queueArn" },
+      "Transitions": {
+        "NextAction": "set-priority",
+        "Errors": [{ "NextAction": "set-default-queue", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "set-default-queue",
+      "Type": "UpdateContactTargetQueue",
+      "Parameters": { "QueueId": "${DEFAULT_QUEUE_ARN}" },
+      "Transitions": {
+        "NextAction": "transfer",
+        "Errors": [{ "NextAction": "technical-error", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "set-priority",
+      "Type": "UpdateContactRoutingBehavior",
+      "Parameters": { "QueuePriority": "$.External.priority" },
+      "Transitions": {
+        "NextAction": "transfer",
+        "Errors": [{ "NextAction": "transfer", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "transfer",
+      "Type": "TransferContactToQueue",
+      "Parameters": {},
+      "Transitions": {
+        "NextAction": "technical-error",
+        "Errors": [
+          { "NextAction": "queue-full", "ErrorType": "QueueAtCapacity" },
+          { "NextAction": "technical-error", "ErrorType": "NoMatchingError" }
+        ]
+      }
+    },
+    {
+      "Identifier": "queue-full",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "We're very busy right now. You can manage most things in the app or online, or please call back later."
+      },
+      "Transitions": {
+        "NextAction": "disconnect",
+        "Errors": [{ "NextAction": "disconnect", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "technical-error",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Sorry, we're having a technical problem. Please try again in a few minutes."
+      },
+      "Transitions": {
+        "NextAction": "disconnect",
+        "Errors": [{ "NextAction": "disconnect", "ErrorType": "NoMatchingError" }]
+      }
+    },
+    {
+      "Identifier": "disconnect",
+      "Type": "DisconnectParticipant",
+      "Parameters": {},
+      "Transitions": {}
+    }
+  ]
+}
