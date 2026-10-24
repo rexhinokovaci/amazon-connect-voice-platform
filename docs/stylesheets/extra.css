@@ -1,12 +1,6 @@
-:root {
-  --md-primary-fg-color: #0b0d12;
-  --md-accent-fg-color: #0a7a55;
-}
-.md-header__button.md-logo img {
-  border-radius: 50%;
-}
-.md-typeset h1 {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #0b0d12;
-}
+:root { --md-accent-fg-color: #0a7a55; }
+[data-md-color-scheme='default'] { --md-primary-fg-color: #0b0d12; }
+[data-md-color-scheme='slate'] { --md-primary-fg-color: #12151b; --md-accent-fg-color: #34c28a; }
+.md-header__button.md-logo img { border-radius: 50%; }
+.md-typeset h1 { font-weight: 700; letter-spacing: -0.02em; }
+[data-md-color-scheme='default'] .md-typeset h1 { color: #0b0d12; }
