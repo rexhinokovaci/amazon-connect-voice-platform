@@ -1,0 +1,77 @@
+site_name: Amazon Connect voice platform
+site_description: Contact flows, Lex V2, Lambda fulfilment, Nova Sonic, multi-tenant config and Datadog observability for an Amazon Connect voice estate.
+site_url: https://rexhinokovaci.github.io/amazon-connect-voice-platform/
+repo_url: https://github.com/rexhinokovaci/amazon-connect-voice-platform
+repo_name: amazon-connect-voice-platform
+edit_uri: edit/main/docs/
+copyright: MIT licensed
+
+theme:
+  name: material
+  logo: https://avatars.githubusercontent.com/u/55946528?v=4&s=96
+  favicon: https://avatars.githubusercontent.com/u/55946528?v=4&s=64
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: black
+      accent: green
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: black
+      accent: green
+      toggle: { icon: material/weather-sunny, name: Light mode }
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Live simulator: https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/
+  - Admin console: https://rexhinokovaci.github.io/amazon-connect-voice-platform/demo/admin.html
+  - Design:
+      - Architecture: architecture.md
+      - Latency budget: latency-budget.md
+      - Multi-tenancy: multi-tenancy.md
+      - Nova Sonic integration: nova-sonic.md
+      - Writing for voice: voice-prompting.md
+      - Telephony and SIP: telephony-sip.md
+  - Operations:
+      - Observability: observability.md
+      - Runbooks: runbooks/index.md
+      - Emergency transfer failure: runbooks/emergency-transfer-failure.md
+      - Lex fulfilment errors: runbooks/lex-fulfilment-errors.md
+      - Router degraded: runbooks/router-degraded.md
+      - Queue backlog: runbooks/queue-backlog.md
+      - CTR pipeline lag: runbooks/ctr-pipeline-lag.md
+  - Delivery:
+      - Onboarding: onboarding.md
+      - Contact-centre migration: migration.md
+  - Decisions:
+      - ADR index: adr/index.md
+      - 0001 Nova Sonic path: adr/0001-nova-sonic-integration-path.md
+      - 0002 Instance per tenant: adr/0002-instance-per-tenant.md
+      - 0003 Flows as code: adr/0003-flows-as-code.md
+      - 0004 TypeScript and Python: adr/0004-typescript-and-python.md
+      - 0005 Fail to a person: adr/0005-fail-to-a-person.md
+
+extra_css:
+  - stylesheets/extra.css
