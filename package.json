@@ -27,11 +27,11 @@
     "datadog:plan": "tsx scripts/datadog-apply.ts --dry-run"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.1156.0",
-    "@aws-sdk/client-dynamodb": "^3.1156.0",
-    "@aws-sdk/lib-dynamodb": "^3.1156.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1160.0",
+    "@aws-sdk/client-dynamodb": "^3.1160.0",
+    "@aws-sdk/lib-dynamodb": "^3.1160.0",
     "@smithy/node-http-handler": "^4.12.1",
-    "aws-cdk-lib": "^2.274.0",
+    "aws-cdk-lib": "^2.275.0",
     "constructs": "^10.8.1",
     "datadog-cdk-constructs-v2": "^5.3.0",
     "zod": "^4.6.7"
